@@ -35,7 +35,6 @@ if (SpeechRecognition) {
     recognition.lang = 'en-US';
     recognition.interimResults = false;
 } else {
-    // Error handling if browser doesn't support the API
     const playButtonContainer = playButton.parentElement;
     const errorText = document.createElement('p');
     errorText.textContent = "Sorry, your browser doesn't support Speech Recognition.";
@@ -46,7 +45,6 @@ if (SpeechRecognition) {
 
 // --- 5. UI STATE FUNCTIONS ---
 
-// This function sets up the screen for a new word challenge
 function showChallengeView() {
     challengeArea.classList.remove('hidden');
     listeningArea.classList.add('hidden');
@@ -56,7 +54,6 @@ function showChallengeView() {
     statusText.classList.remove('hidden');
 }
 
-// This function shows the success animation
 function showSuccessView() {
     celebrationSound.play();
     challengeArea.classList.add('hidden');
@@ -67,24 +64,20 @@ function showSuccessView() {
     statusText.classList.add('hidden');
 }
 
-// This function shows the listening UI
 function showListeningView() {
     challengeArea.classList.add('hidden');
     listeningArea.classList.remove('hidden');
     micButton.classList.add('hidden');
     statusText.classList.add('hidden');
-    
-    // Start listening for speech
     recognition.start();
 }
 
-// Function to load the data for the next word
 function loadNextWord() {
     const currentWordData = wordList[currentWordIndex];
     wordDisplay.textContent = currentWordData.word;
     imageDisplay.src = currentWordData.image;
     statusText.textContent = 'Click the mic and say the word!';
-    showChallengeView(); // Display the challenge view
+    showChallengeView();
 }
 
 
@@ -93,7 +86,7 @@ function loadNextWord() {
 playButton.addEventListener('click', () => {
     startScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
-    loadNextWord(); // Load the first word
+    loadNextWord();
 });
 
 micButton.addEventListener('click', showListeningView);
@@ -103,26 +96,33 @@ nextButton.addEventListener('click', () => {
     loadNextWord();
 });
 
+// #### THIS IS THE UPDATED SECTION ####
 // Process the result from speech recognition
 recognition.onresult = (event) => {
     showChallengeView(); // Return to the main view to show the result
-    const spokenWord = event.results[0][0].transcript.toLowerCase().trim();
+
+    // Get the transcript and clean it up thoroughly
+    let spokenWord = event.results[0][0].transcript.toLowerCase().trim();
+    // NEW: Remove common punctuation to make matching more reliable
+    spokenWord = spokenWord.replace(/[\.,?!]/g, '');
+
     const correctWord = wordList[currentWordIndex].word;
     
-    statusText.textContent = `You said: "${spokenWord}"`;
-
-    if (spokenWord === correctWord) {
+    // UPDATED: Check if the SPOKEN phrase INCLUDES the correct word.
+    // This is more flexible than an exact match (spokenWord === correctWord).
+    if (spokenWord.includes(correctWord)) {
+        statusText.textContent = `You said: "${spokenWord}"... Perfect!`;
         setTimeout(showSuccessView, 500); // Celebrate after a short delay
     } else {
-        setTimeout(() => {
-            statusText.textContent = 'So close, try again!';
-        }, 500);
+        // UPDATED: Give the user better feedback on failure
+        // Show them what the computer heard so they know why it failed.
+        statusText.textContent = `I heard "${spokenWord}". So close, try again!`;
     }
 };
 
 // Handle errors during speech recognition
 recognition.onerror = (event) => {
-    showChallengeView(); // Always return to the challenge view on error
+    showChallengeView(); 
     statusText.textContent = 'Oops, I didn\'t catch that. Please try again.';
     console.error('Speech recognition error:', event.error);
 };
