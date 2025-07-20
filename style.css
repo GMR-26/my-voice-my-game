@@ -1,0 +1,60 @@
+body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f8ff; /* Alice Blue */
+}
+
+.game-container {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+}
+
+#challenge-area h1 {
+    font-size: 4rem;
+    color: #333;
+    margin: 10px 0;
+}
+
+#challenge-area img, #animation-area img {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 20px;
+}
+
+#mic-button {
+    background-color: #ff4757;
+    border: none;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    margin-top: 30px;
+    color: white;
+    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.5);
+    transition: transform 0.2s;
+}
+
+#mic-button:hover {
+    transform: scale(1.1);
+}
+
+#status-text {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #576574;
+    min-height: 1.5rem;
+}
+
+/* This class lets us hide/show elements with JavaScript */
+.hidden {
+    display: none;
+}
