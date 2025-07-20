@@ -1,4 +1,5 @@
-// Get references to the HTML elements we need to interact with
+// --- 1. GET HTML ELEMENTS ---
+// Get references to all the interactive parts of your HTML
 const wordDisplay = document.getElementById('word-display');
 const imageDisplay = document.getElementById('image-display');
 const micButton = document.getElementById('mic-button');
@@ -6,9 +7,13 @@ const statusText = document.getElementById('status-text');
 const challengeArea = document.getElementById('challenge-area');
 const animationArea = document.getElementById('animation-area');
 const animationGif = document.getElementById('animation-gif');
+const nextButton = document.getElementById('next-button'); // NEW: Get the next button
 
-// Define your list of words, images, and animations.
-// IMPORTANT: Make sure the file paths match your file names exactly!
+// NEW: Create an Audio object for our celebration sound
+const celebrationSound = new Audio('sounds/success.mp3');
+
+
+// --- 2. DEFINE YOUR WORDS & ASSETS ---
 const wordList = [
     { word: 'cat', image: 'images/cat.png', animation: 'animations/cat.gif' },
     { word: 'dog', image: 'images/dog.png', animation: 'animations/dog.gif' },
@@ -17,13 +22,14 @@ const wordList = [
     { word: 'car', image: 'images/car.png', animation: 'animations/car.gif' }
 ];
 
-// A variable to track which word we are on
+
+// --- 3. GAME STATE ---
 let currentWordIndex = 0;
 
-// Set up the browser's Speech Recognition API
+
+// --- 4. SPEECH RECOGNITION SETUP ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
-
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
 } else {
@@ -31,10 +37,15 @@ if (SpeechRecognition) {
     micButton.disabled = true;
 }
 
-// Function to display the next word challenge
+
+// --- 5. GAME FUNCTIONS ---
+
+// UPDATED: This function now also hides the 'Next' button
 function showNextWord() {
-    animationArea.classList.add('hidden'); // Hide the animation
-    challengeArea.classList.remove('hidden'); // Show the challenge
+    animationArea.classList.add('hidden');
+    challengeArea.classList.remove('hidden');
+    micButton.classList.remove('hidden');
+    nextButton.classList.add('hidden'); // NEW: Hide the next button
 
     const currentWordData = wordList[currentWordIndex];
     wordDisplay.textContent = currentWordData.word;
@@ -42,42 +53,45 @@ function showNextWord() {
     statusText.textContent = 'Click the mic and say the word!';
 }
 
-// Function to run when the user gets the answer right
+// UPDATED: This function no longer uses setTimeout to go to the next word
 function onCorrectAnswer() {
-    statusText.textContent = 'Awesome!';
-    
-    // Show the success animation
+    statusText.textContent = 'Great Job!';
+    celebrationSound.play(); // NEW: Play the celebration sound
+
+    // Show the success animation and the next button
     const currentWordData = wordList[currentWordIndex];
     animationGif.src = currentWordData.animation;
     challengeArea.classList.add('hidden');
+    micButton.classList.add('hidden'); // NEW: Hide the mic button
     animationArea.classList.remove('hidden');
-
-    // Go to the next word after 3 seconds
-    currentWordIndex = (currentWordIndex + 1) % wordList.length; // Loop back to the start
-    setTimeout(showNextWord, 3000); 
+    nextButton.classList.remove('hidden'); // NEW: Show the next button
 }
 
-// Add a click event to the microphone button
+
+// --- 6. EVENT LISTENERS ---
+
+// Listener for the microphone button
 micButton.addEventListener('click', () => {
     statusText.textContent = 'Listening...';
-    try {
-        recognition.start(); // Start listening
-    } catch(error) {
-        console.error("Recognition already started.", error);
-    }
+    recognition.start();
+});
+
+// NEW: Add a listener for our new 'Next Word' button
+nextButton.addEventListener('click', () => {
+    // Move to the next word in the list
+    currentWordIndex = (currentWordIndex + 1) % wordList.length;
+    showNextWord();
 });
 
 // Process the result from the speech recognition
 recognition.onresult = (event) => {
-    // Get the transcript of what was said
     const spokenWord = event.results[0][0].transcript.toLowerCase().trim();
     const correctWord = wordList[currentWordIndex].word;
     
     statusText.textContent = `You said: "${spokenWord}"`;
 
-    // Check if the answer is correct
     if (spokenWord === correctWord) {
-        setTimeout(onCorrectAnswer, 1000); // Wait a second before celebrating
+        setTimeout(onCorrectAnswer, 1000);
     } else {
         setTimeout(() => {
             statusText.textContent = 'So close, try again!';
@@ -85,11 +99,12 @@ recognition.onresult = (event) => {
     }
 };
 
-// Handle any errors
+// Handle errors
 recognition.onerror = (event) => {
     statusText.textContent = 'Oops, I didn\'t catch that. Please try again.';
     console.error('Speech recognition error:', event.error);
 };
 
-// Start the game by showing the first word
+
+// --- 7. INITIALIZE THE GAME ---
 showNextWord();

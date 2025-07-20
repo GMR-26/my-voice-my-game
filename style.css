@@ -58,3 +58,21 @@ body {
 .hidden {
     display: none;
 }
+
+/* Style for the new 'Next Word' button */
+#next-button {
+    background-color: #2ecc71; /* A nice green color */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-family: inherit; /* Use the same font as the rest of the page */
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+#next-button:hover {
+    background-color: #27ae60; /* A darker green on hover */
+}
