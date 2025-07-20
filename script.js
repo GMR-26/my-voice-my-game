@@ -2,6 +2,9 @@
 const startScreen = document.getElementById('start-screen');
 const gameScreen = document.getElementById('game-screen');
 const playButton = document.getElementById('play-button');
+const finalCelebrationScreen = document.getElementById('final-celebration-screen');
+const quoteDisplay = document.getElementById('quote-display');
+const playAgainButton = document.getElementById('play-again-button');
 
 const wordDisplay = document.getElementById('word-display');
 const imageDisplay = document.getElementById('image-display');
@@ -11,18 +14,25 @@ const challengeArea = document.getElementById('challenge-area');
 const animationArea = document.getElementById('animation-area');
 const animationGif = document.getElementById('animation-gif');
 const nextButton = document.getElementById('next-button');
+
 const celebrationSound = new Audio('sounds/success.mp3');
+const finalCelebrationSound = new Audio('sounds/final-success.mp3');
 
 // --- 2. DEFINE YOUR WORDS & ASSETS ---
-// !!! DOUBLE-CHECK THESE FILE PATHS !!!
-// This is the most likely source of the broken animation error.
-// Make sure 'animations/cat.gif' exactly matches your file name and folder.
 const wordList = [
     { word: 'cat', image: 'images/cat.png', animation: 'animations/cat.gif' },
     { word: 'dog', image: 'images/dog.png', animation: 'animations/dog.gif' },
     { word: 'sun', image: 'images/sun.png', animation: 'animations/sun.gif' },
     { word: 'ball', image: 'images/ball.png', animation: 'animations/ball.gif' },
     { word: 'car', image: 'images/car.png', animation: 'animations/car.gif' }
+];
+
+const quotes = [
+    "The journey of a thousand miles begins with a single step.",
+    "Believe you can and you're halfway there.",
+    "Every voice deserves to be heard.",
+    "You are capable of amazing things.",
+    "Practice makes progress, not perfect."
 ];
 
 // --- 3. GAME STATE ---
@@ -33,39 +43,61 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 let recognition;
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
-    // ... (rest of setup is the same)
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
 } else {
-    // ... (error handling is the same)
+    const playButtonContainer = playButton.parentElement;
+    const errorText = document.createElement('p');
+    errorText.textContent = "Sorry, your browser doesn't support Speech Recognition.";
+    errorText.style.color = 'red';
+    playButtonContainer.appendChild(errorText);
+    playButton.disabled = true;
 }
 
-// --- 5. GAME LOGIC ---
+// --- 5. UI STATE FUNCTIONS ---
 
-// This function shows the success state
-function showSuccessState() {
-    celebrationSound.play();
-    challengeArea.classList.add('hidden');    // Hide the word/image
-    micButton.classList.add('hidden');        // Hide the mic button
-    animationArea.classList.remove('hidden'); // Show the success animation
-    nextButton.classList.remove('hidden');    // Show the next button
-    statusText.textContent = 'Awesome!';
-}
-
-// This function loads the data for the next word and resets the UI
-function loadNextWord() {
-    // Set up the UI for a new challenge
+// Resets the UI to show the word/image challenge
+function showChallengeView() {
     challengeArea.classList.remove('hidden');
     animationArea.classList.add('hidden');
     micButton.classList.remove('hidden');
     nextButton.classList.add('hidden');
-    
-    // Load the word data
+    statusText.textContent = 'Click the mic and say the word!';
+}
+
+// Shows the success animation for a single word
+function showSuccessState() {
+    // Check if it's the last word in the list
+    if (currentWordIndex === wordList.length - 1) {
+        showFinalCelebration();
+    } else {
+        celebrationSound.play();
+        challengeArea.classList.add('hidden');
+        micButton.classList.add('hidden');
+        animationArea.classList.remove('hidden');
+        nextButton.classList.remove('hidden');
+        statusText.textContent = 'Awesome!';
+    }
+}
+
+// Shows the final "You Did It!" screen
+function showFinalCelebration() {
+    finalCelebrationSound.play();
+    gameScreen.classList.add('hidden');
+    finalCelebrationScreen.classList.remove('hidden');
+
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    quoteDisplay.textContent = `"${randomQuote}"`;
+}
+
+// Loads the data for the current word into the UI
+function loadNextWord() {
     const currentWordData = wordList[currentWordIndex];
     wordDisplay.textContent = currentWordData.word;
     imageDisplay.src = currentWordData.image;
-    // Set the animation source ready for when it's needed
-    animationGif.src = currentWordData.animation; 
-    
-    statusText.textContent = 'Click the mic and say the word!';
+    animationGif.src = currentWordData.animation;
+    showChallengeView();
 }
 
 // --- 6. EVENT LISTENERS ---
@@ -77,20 +109,25 @@ playButton.addEventListener('click', () => {
 });
 
 micButton.addEventListener('click', () => {
-    // Show listening state
     micButton.classList.add('is-listening');
-    micButton.disabled = true; // Prevent multiple clicks
+    micButton.disabled = true;
     statusText.textContent = 'Listening...';
-    
     recognition.start();
 });
 
 nextButton.addEventListener('click', () => {
-    currentWordIndex = (currentWordIndex + 1) % wordList.length;
+    currentWordIndex++;
     loadNextWord();
 });
 
-// Process the result
+playAgainButton.addEventListener('click', () => {
+    finalCelebrationScreen.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+    currentWordIndex = 0;
+    loadNextWord();
+});
+
+// Process the result from speech recognition
 recognition.onresult = (event) => {
     const spokenWord = event.results[0][0].transcript.toLowerCase().trim().replace(/[\.,?!]/g, '');
     const correctWord = wordList[currentWordIndex].word;
@@ -103,9 +140,14 @@ recognition.onresult = (event) => {
     }
 };
 
-// This event runs when recognition ends, whether it was successful or not
+// This event runs when recognition ends, regardless of success
 recognition.onend = () => {
-    // Stop the listening animation and re-enable the button
     micButton.classList.remove('is-listening');
     micButton.disabled = false;
+};
+
+// Handle any errors
+recognition.onerror = (event) => {
+    statusText.textContent = 'Oops, I didn\'t catch that. Please try again.';
+    console.error('Speech recognition error:', event.error);
 };
