@@ -112,3 +112,44 @@ body {
 #play-button:hover {
     transform: scale(1.05);
 }
+
+/* Styles for the new Listening Area */
+#listening-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* This padding gives it some space, matching the challenge area */
+    padding: 60px 0; 
+}
+
+#listening-area p {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #576574;
+}
+
+/* This creates the pulsing red dot animation */
+.dot-pulse {
+    width: 40px;
+    height: 40px;
+    background-color: #ff4757; /* Red */
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 1);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 20px rgba(255, 71, 87, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+    }
+}
