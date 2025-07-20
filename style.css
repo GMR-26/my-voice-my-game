@@ -160,3 +160,54 @@ body {
     0% { transform: scale(1); opacity: 1; }
     100% { transform: scale(3); opacity: 0; }
 }
+
+@media (max-width: 600px) {
+
+    /* Make the main game card have less padding on small screens */
+    .game-container {
+        padding: 20px;
+    }
+
+    /* Make the main word smaller */
+    #challenge-area h1 {
+        font-size: 2.5rem;
+    }
+
+    /* Make the images slightly smaller */
+    #challenge-area img, #animation-area img {
+        max-width: 150px;
+        min-height: 150px;
+    }
+
+    /* Make the microphone button smaller */
+    #mic-button {
+        width: 80px;
+        height: 80px;
+        margin-top: 20px;
+    }
+
+    /* Adjust status text size */
+    #status-text {
+        font-size: 1rem;
+    }
+    
+    /* Adjust 'Next Word' and 'Play Again' buttons */
+    #next-button, #play-again-button {
+        font-size: 1rem;
+        padding: 12px 24px;
+    }
+
+    /* Make the logo on the start screen a bit smaller */
+    #start-screen img {
+        max-width: 200px;
+    }
+
+    /* Make the final celebration text smaller */
+    #final-celebration-screen h2 {
+        font-size: 3rem;
+    }
+
+    #quote-display {
+        font-size: 1rem;
+    }
+}
