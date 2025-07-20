@@ -76,3 +76,37 @@ body {
 #next-button:hover {
     background-color: #27ae60; /* A darker green on hover */
 }
+
+/* Styles for the new Start Screen */
+#start-screen {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#start-screen img {
+    max-width: 300px; /* Adjust size as needed */
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+#play-button {
+    background-color: #007bff; /* A nice blue */
+    color: white;
+    font-size: 1.5rem;
+    font-family: inherit;
+    padding: 15px 50px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    transition: transform 0.2s;
+}
+
+#play-button:hover {
+    transform: scale(1.05);
+}

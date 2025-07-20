@@ -1,5 +1,10 @@
 // --- 1. GET HTML ELEMENTS ---
-// Get references to all the interactive parts of your HTML
+// NEW: Get the new screen containers and the play button
+const startScreen = document.getElementById('start-screen');
+const gameScreen = document.getElementById('game-screen');
+const playButton = document.getElementById('play-button');
+
+// Existing elements
 const wordDisplay = document.getElementById('word-display');
 const imageDisplay = document.getElementById('image-display');
 const micButton = document.getElementById('mic-button');
@@ -7,9 +12,7 @@ const statusText = document.getElementById('status-text');
 const challengeArea = document.getElementById('challenge-area');
 const animationArea = document.getElementById('animation-area');
 const animationGif = document.getElementById('animation-gif');
-const nextButton = document.getElementById('next-button'); // NEW: Get the next button
-
-// NEW: Create an Audio object for our celebration sound
+const nextButton = document.getElementById('next-button');
 const celebrationSound = new Audio('sounds/success.mp3');
 
 
@@ -33,19 +36,22 @@ let recognition;
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
 } else {
-    statusText.textContent = "Sorry, your browser doesn't support speech recognition.";
-    micButton.disabled = true;
+    // This message will now appear on the start screen if not supported
+    const playButtonContainer = playButton.parentElement;
+    const errorText = document.createElement('p');
+    errorText.textContent = "Sorry, your browser doesn't support Speech Recognition.";
+    errorText.style.color = 'red';
+    playButtonContainer.appendChild(errorText);
+    playButton.disabled = true;
 }
 
 
 // --- 5. GAME FUNCTIONS ---
-
-// UPDATED: This function now also hides the 'Next' button
 function showNextWord() {
     animationArea.classList.add('hidden');
     challengeArea.classList.remove('hidden');
     micButton.classList.remove('hidden');
-    nextButton.classList.add('hidden'); // NEW: Hide the next button
+    nextButton.classList.add('hidden'); 
 
     const currentWordData = wordList[currentWordIndex];
     wordDisplay.textContent = currentWordData.word;
@@ -53,22 +59,27 @@ function showNextWord() {
     statusText.textContent = 'Click the mic and say the word!';
 }
 
-// UPDATED: This function no longer uses setTimeout to go to the next word
 function onCorrectAnswer() {
     statusText.textContent = 'Great Job!';
-    celebrationSound.play(); // NEW: Play the celebration sound
+    celebrationSound.play();
 
-    // Show the success animation and the next button
     const currentWordData = wordList[currentWordIndex];
     animationGif.src = currentWordData.animation;
     challengeArea.classList.add('hidden');
-    micButton.classList.add('hidden'); // NEW: Hide the mic button
+    micButton.classList.add('hidden');
     animationArea.classList.remove('hidden');
-    nextButton.classList.remove('hidden'); // NEW: Show the next button
+    nextButton.classList.remove('hidden');
 }
 
 
 // --- 6. EVENT LISTENERS ---
+
+// NEW: Listener for the main Play button on the start screen
+playButton.addEventListener('click', () => {
+    startScreen.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+    showNextWord(); // Initialize the first word of the game
+});
 
 // Listener for the microphone button
 micButton.addEventListener('click', () => {
@@ -76,9 +87,8 @@ micButton.addEventListener('click', () => {
     recognition.start();
 });
 
-// NEW: Add a listener for our new 'Next Word' button
+// Listener for our 'Next Word' button
 nextButton.addEventListener('click', () => {
-    // Move to the next word in the list
     currentWordIndex = (currentWordIndex + 1) % wordList.length;
     showNextWord();
 });
@@ -107,4 +117,4 @@ recognition.onerror = (event) => {
 
 
 // --- 7. INITIALIZE THE GAME ---
-showNextWord();
+// DELETED: We no longer call showNextWord() here. It's called when the user clicks "Play".
