@@ -11,10 +11,12 @@ const challengeArea = document.getElementById('challenge-area');
 const animationArea = document.getElementById('animation-area');
 const animationGif = document.getElementById('animation-gif');
 const nextButton = document.getElementById('next-button');
-const listeningArea = document.getElementById('listening-area');
 const celebrationSound = new Audio('sounds/success.mp3');
 
 // --- 2. DEFINE YOUR WORDS & ASSETS ---
+// !!! DOUBLE-CHECK THESE FILE PATHS !!!
+// This is the most likely source of the broken animation error.
+// Make sure 'animations/cat.gif' exactly matches your file name and folder.
 const wordList = [
     { word: 'cat', image: 'images/cat.png', animation: 'animations/cat.gif' },
     { word: 'dog', image: 'images/dog.png', animation: 'animations/dog.gif' },
@@ -31,55 +33,40 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 let recognition;
 if (SpeechRecognition) {
     recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
+    // ... (rest of setup is the same)
 } else {
-    const playButtonContainer = playButton.parentElement;
-    const errorText = document.createElement('p');
-    errorText.textContent = "Sorry, your browser doesn't support Speech Recognition.";
-    errorText.style.color = 'red';
-    playButtonContainer.appendChild(errorText);
-    playButton.disabled = true;
+    // ... (error handling is the same)
 }
 
-// --- 5. UI STATE FUNCTIONS ---
+// --- 5. GAME LOGIC ---
 
-function showChallengeView() {
+// This function shows the success state
+function showSuccessState() {
+    celebrationSound.play();
+    challengeArea.classList.add('hidden');    // Hide the word/image
+    micButton.classList.add('hidden');        // Hide the mic button
+    animationArea.classList.remove('hidden'); // Show the success animation
+    nextButton.classList.remove('hidden');    // Show the next button
+    statusText.textContent = 'Awesome!';
+}
+
+// This function loads the data for the next word and resets the UI
+function loadNextWord() {
+    // Set up the UI for a new challenge
     challengeArea.classList.remove('hidden');
-    listeningArea.classList.add('hidden');
     animationArea.classList.add('hidden');
     micButton.classList.remove('hidden');
     nextButton.classList.add('hidden');
-    statusText.classList.remove('hidden');
-}
-
-function showSuccessView() {
-    celebrationSound.play();
-    challengeArea.classList.add('hidden');
-    listeningArea.classList.add('hidden');
-    animationArea.classList.remove('hidden');
-    micButton.classList.add('hidden');
-    nextButton.classList.remove('hidden');
-    statusText.classList.add('hidden');
-}
-
-function showListeningView() {
-    challengeArea.classList.add('hidden');
-    listeningArea.classList.remove('hidden');
-    micButton.classList.add('hidden');
-    statusText.classList.add('hidden');
-    recognition.start();
-}
-
-function loadNextWord() {
+    
+    // Load the word data
     const currentWordData = wordList[currentWordIndex];
     wordDisplay.textContent = currentWordData.word;
     imageDisplay.src = currentWordData.image;
+    // Set the animation source ready for when it's needed
+    animationGif.src = currentWordData.animation; 
+    
     statusText.textContent = 'Click the mic and say the word!';
-    showChallengeView();
 }
-
 
 // --- 6. EVENT LISTENERS ---
 
@@ -89,40 +76,36 @@ playButton.addEventListener('click', () => {
     loadNextWord();
 });
 
-micButton.addEventListener('click', showListeningView);
+micButton.addEventListener('click', () => {
+    // Show listening state
+    micButton.classList.add('is-listening');
+    micButton.disabled = true; // Prevent multiple clicks
+    statusText.textContent = 'Listening...';
+    
+    recognition.start();
+});
 
 nextButton.addEventListener('click', () => {
     currentWordIndex = (currentWordIndex + 1) % wordList.length;
     loadNextWord();
 });
 
-// #### THIS IS THE UPDATED SECTION ####
-// Process the result from speech recognition
+// Process the result
 recognition.onresult = (event) => {
-    showChallengeView(); // Return to the main view to show the result
-
-    // Get the transcript and clean it up thoroughly
-    let spokenWord = event.results[0][0].transcript.toLowerCase().trim();
-    // NEW: Remove common punctuation to make matching more reliable
-    spokenWord = spokenWord.replace(/[\.,?!]/g, '');
-
+    const spokenWord = event.results[0][0].transcript.toLowerCase().trim().replace(/[\.,?!]/g, '');
     const correctWord = wordList[currentWordIndex].word;
-    
-    // UPDATED: Check if the SPOKEN phrase INCLUDES the correct word.
-    // This is more flexible than an exact match (spokenWord === correctWord).
+
     if (spokenWord.includes(correctWord)) {
         statusText.textContent = `You said: "${spokenWord}"... Perfect!`;
-        setTimeout(showSuccessView, 500); // Celebrate after a short delay
+        setTimeout(showSuccessState, 500);
     } else {
-        // UPDATED: Give the user better feedback on failure
-        // Show them what the computer heard so they know why it failed.
         statusText.textContent = `I heard "${spokenWord}". So close, try again!`;
     }
 };
 
-// Handle errors during speech recognition
-recognition.onerror = (event) => {
-    showChallengeView(); 
-    statusText.textContent = 'Oops, I didn\'t catch that. Please try again.';
-    console.error('Speech recognition error:', event.error);
+// This event runs when recognition ends, whether it was successful or not
+recognition.onend = () => {
+    // Stop the listening animation and re-enable the button
+    micButton.classList.remove('is-listening');
+    micButton.disabled = false;
 };

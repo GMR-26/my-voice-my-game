@@ -31,6 +31,9 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     width: 90%;
     max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #challenge-area h1 {
@@ -43,6 +46,7 @@ body {
     max-width: 200px;
     max-height: 200px;
     margin-top: 20px;
+    min-height: 200px;
 }
 
 #mic-button {
@@ -60,6 +64,10 @@ body {
 
 #mic-button:hover {
     transform: scale(1.1);
+}
+
+#mic-button.is-listening {
+    animation: pulse 2s infinite;
 }
 
 #status-text {
@@ -112,14 +120,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Listening Area Styles */
-#listening-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 0; 
-}
 
 #listening-area p {
     margin-top: 20px;
@@ -127,14 +127,6 @@ body {
     color: #576574;
 }
 
-.dot-pulse {
-    width: 40px;
-    height: 40px;
-    background-color: #ff4757;
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(255, 71, 87, 1);
-    animation: pulse 2s infinite;
-}
 
 @keyframes pulse {
     0% {
